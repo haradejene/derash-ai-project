@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+
+
+@layer base {
+  :root {
+    --primary: #003527;
+    --secondary: #735c00;
+    --surface: #fbfbe2;
+    --surface-container: #efefd7;
+    --surface-container-lowest: #ffffff;
+    --surface-container-high: #eaead1;
+    --surface-container-highest: #e4e4cc;
+    --on-surface: #1b1d0e;
+    --on-surface-variant: #404944;
+    --outline-variant: #bfc9c3;
+    --error: #ba1a1a;
+  }
+
+  .dark {
+    --surface: #1b1d0e;
+    --surface-container: #303221;
+    --on-surface: #f2f2d9;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.heritage-pattern {
+  background-color: #fbfbe2;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23003527' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.03;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.chat-gradient {
+  background: linear-gradient(180deg, rgba(251, 251, 226, 0) 0%, rgba(251, 251, 226, 1) 100%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-container);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
+}
+
+/* Animations */
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+.animate-bounce {
+  animation: bounce 1.4s ease-in-out infinite;
+}
+
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-surface-container-lowest {
+  background-color: var(--surface-container-lowest);
+}
+
+.bg-surface-container-high {
+  background-color: var(--surface-container-high);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-on-surface-variant {
+  color: var(--on-surface-variant);
+}
