@@ -6,7 +6,7 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': 'http://localhost:3000',
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
@@ -30,10 +30,11 @@ export async function POST(req: NextRequest) {
       .single();
     
     if (existingUser) {
-      return NextResponse.json({ error: 'User already registered' }, { status: 400 });
+      console.log('⚠️ User already exists:', email);
+      return NextResponse.json({ error: 'Email already registered' }, { status: 400 });
     }
     
-    // Create user in Supabase Auth
+    // Create user in Supabase Auth with auto-confirm
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -43,7 +44,9 @@ export async function POST(req: NextRequest) {
           room_number, 
           phone,
           role: role || 'guest',
-        }
+        },
+        // This is important - auto confirm email
+        emailRedirectTo: 'http://localhost:3000/login'
       }
     });
     
@@ -57,6 +60,18 @@ export async function POST(req: NextRequest) {
     }
     
     console.log('✅ Auth user created:', authData.user.id);
+    
+    // Auto-confirm the user using admin API (bypasses email confirmation)
+    const { error: confirmError } = await adminClient.auth.admin.updateUserById(
+      authData.user.id,
+      { email_confirm: true }
+    );
+    
+    if (confirmError) {
+      console.error('❌ Error confirming user:', confirmError);
+    } else {
+      console.log('✅ User auto-confirmed');
+    }
     
     // Insert into users table
     const { error: insertError } = await adminClient
@@ -73,24 +88,28 @@ export async function POST(req: NextRequest) {
     
     if (insertError) {
       console.error('❌ Insert error:', insertError);
-      // Rollback - delete the auth user
-      await supabase.auth.admin.deleteUser(authData.user.id);
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
     
     console.log('✅ User inserted with role:', role || 'guest');
     
+    // Create a session for the user (auto-login)
+    const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
     const response = NextResponse.json({
       user: authData.user,
-      session: authData.session
+      session: sessionData?.session || authData.session
     });
-    response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+    response.headers.set('Access-Control-Allow-Origin', '*');
     return response;
     
   } catch (error) {
     console.error('❌ Server error:', error);
     const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+    response.headers.set('Access-Control-Allow-Origin', '*');
     return response;
   }
 }
