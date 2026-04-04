@@ -1,3 +1,4 @@
+// backend/app/api/bookings/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
@@ -10,13 +11,8 @@ export async function GET(req: NextRequest) {
     .from('bookings')
     .select('*, users(name, room_number)');
   
-  if (userId) {
-    query = query.eq('user_id', userId);
-  }
-  
-  if (status) {
-    query = query.eq('status', status);
-  }
+  if (userId) query = query.eq('user_id', userId);
+  if (status) query = query.eq('status', status);
   
   const { data, error } = await query.order('booking_time', { ascending: true });
   
