@@ -1,0 +1,108 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../src/contexts/AuthContext';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login, user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'staff' || user.role === 'admin') {
+        window.location.href = '/staff/dashboard';
+      } else {
+        window.location.href = '/';
+      }
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const loggedInUser = await login(email, password);
+      toast.success('Login successful!');
+      
+      if (loggedInUser.role === 'staff' || loggedInUser.role === 'admin') {
+        window.location.href = '/staff/dashboard';
+      } else {
+        window.location.href = '/';
+      }
+      
+    } catch (error: any) {
+      toast.error(error.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-serif font-bold text-green-900">Derash AI</h1>
+          <p className="text-amber-600 mt-2">Welcome back</p>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="guest@example.com"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-green-700 to-green-800 text-white py-3 rounded-xl font-semibold hover:from-green-800 hover:to-green-900 transition-all disabled:opacity-50"
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+        
+        <div className="mt-6 text-center space-y-2">
+          <p className="text-gray-600">
+            Don't have an account?{' '}
+            <Link href="/signup" className="text-amber-600 hover:text-amber-700 font-semibold">
+              Sign up
+            </Link>
+          </p>
+          <p className="text-sm text-gray-500">
+            Staff?{' '}
+            <Link href="/staff/login" className="text-green-600 hover:text-green-700 font-semibold">
+              Staff Login
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

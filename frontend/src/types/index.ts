@@ -1,11 +1,10 @@
-
 export interface Message {
   id: number;
   text: string;
   isUser: boolean;
   timestamp: string;
-  senderName?: string;  // Add this
-  isSystem?: boolean;    // Add this
+  senderName?: string;
+  isSystem?: boolean;
   bookingDetails?: BookingDetails;
 }
 

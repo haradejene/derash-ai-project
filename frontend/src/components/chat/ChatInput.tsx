@@ -8,9 +8,9 @@ interface ChatInputProps {
 }
 
 const quickActions = [
-  { icon: "calendar_add_on", label: "Book", type: "booking" },
-  { icon: "explore", label: "Explore", type: "explore" },
-  { icon: "report_problem", label: "Complain", type: "complaint", isError: true },
+  { icon: "📅", label: "Book", type: "booking" },
+  { icon: "📍", label: "Explore", type: "explore" },
+  { icon: "⚠️", label: "Complain", type: "complaint", isError: true },
 ];
 
 export default function ChatInput({ onSend, disabled }: ChatInputProps) {
@@ -40,7 +40,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
                 action.isError ? 'text-error' : 'text-primary'
               }`}
             >
-              <span className="material-symbols-outlined text-sm">{action.icon}</span>
+              <span className="text-sm">{action.icon}</span>
               {action.label}
             </button>
           ))}
