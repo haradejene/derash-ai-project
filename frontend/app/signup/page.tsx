@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -16,7 +16,7 @@ export default function SignupPage() {
     phone: '',
   });
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  const { signup, login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,13 +31,29 @@ export default function SignupPage() {
     
     try {
       const { confirmPassword, ...signupData } = formData;
+      
+      // First, sign up
       await signup({ ...signupData, role: 'guest' });
       
-      toast.success('Account created successfully! Please login.');
-      router.push('/login');
+      toast.success('Account created! Logging you in...');
+      
+      // Then automatically log in
+      await login(formData.email, formData.password);
+      
+      // Redirect to chat
+      router.push('/');
       
     } catch (error: any) {
-      toast.error(error.message || 'Signup failed');
+      console.error('Signup error:', error);
+      
+      if (error.message?.includes('already registered') || error.message?.includes('duplicate')) {
+        toast.error('Email already registered. Please login instead.');
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      } else {
+        toast.error(error.message || 'Signup failed');
+      }
     } finally {
       setLoading(false);
     }

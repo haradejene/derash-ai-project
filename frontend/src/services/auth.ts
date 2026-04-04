@@ -4,6 +4,8 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:300
 
 export const authService = {
   async signup(data: SignupData): Promise<User> {
+    console.log('🔵 Signup request for:', data.email);
+    
     const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -11,8 +13,10 @@ export const authService = {
     });
     
     const result = await response.json();
+    console.log('🔵 Signup response status:', response.status);
     
     if (!response.ok) {
+      console.error('🔴 Signup failed:', result);
       throw new Error(result.error || 'Signup failed');
     }
     
@@ -29,6 +33,7 @@ export const authService = {
       };
       
       localStorage.setItem('user', JSON.stringify(user));
+      console.log('🟢 Signup successful for:', user.email, 'Role:', user.role);
       return user;
     }
     
@@ -36,6 +41,8 @@ export const authService = {
   },
 
   async login(credentials: LoginCredentials): Promise<User> {
+    console.log('🔵 Login attempt for:', credentials.email);
+    
     const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -43,8 +50,11 @@ export const authService = {
     });
     
     const result = await response.json();
+    console.log('🔵 Login response status:', response.status);
+    console.log('🔵 Login response role:', result.user?.role);
     
     if (!response.ok) {
+      console.error('🔴 Login failed:', result);
       throw new Error(result.error || 'Login failed');
     }
     
@@ -68,6 +78,7 @@ export const authService = {
       };
       
       localStorage.setItem('user', JSON.stringify(user));
+      console.log('🟢 Login successful for:', user.email, 'Role:', user.role);
       return user;
     }
     
@@ -76,6 +87,7 @@ export const authService = {
 
   async logout(): Promise<void> {
     const token = localStorage.getItem('auth_token');
+    console.log('🔵 Logging out...');
     
     if (token) {
       await fetch(`${BACKEND_URL}/api/auth/logout`, {
@@ -86,6 +98,7 @@ export const authService = {
     
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
+    console.log('🟢 Logout successful');
   },
 
   getCurrentUser(): User | null {

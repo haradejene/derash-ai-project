@@ -16,11 +16,20 @@ export default function StaffSignupPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const validateEmail = (email: string) => {
+    return email.includes('@staff.com') || email.includes('@admin.com');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
+      return;
+    }
+    
+    if (!validateEmail(formData.email)) {
+      toast.error('Staff email must end with @staff.com or @admin.com');
       return;
     }
     
@@ -64,6 +73,7 @@ export default function StaffSignupPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-serif font-bold text-green-900">Staff Registration</h1>
           <p className="text-amber-600 mt-2">Create Staff Account</p>
+          <p className="text-xs text-green-600 mt-2">⚠️ Email must end with <strong>@staff.com</strong> or <strong>@admin.com</strong></p>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -90,9 +100,10 @@ export default function StaffSignupPage() {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
+              placeholder="staff@staff.com"
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="staff@derash.com"
             />
+            <p className="text-xs text-gray-500 mt-1">Must end with @staff.com or @admin.com</p>
           </div>
           
           <div>

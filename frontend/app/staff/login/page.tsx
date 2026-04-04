@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../../src/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -23,15 +23,17 @@ export default function StaffLoginPage() {
     
     try {
       const loggedInUser = await login(email, password);
+      console.log('Logged in user role:', loggedInUser.role);
       
       if (loggedInUser.role === 'staff' || loggedInUser.role === 'admin') {
         toast.success('Welcome staff!');
         window.location.href = '/staff/dashboard';
       } else {
-        toast.error('You do not have staff privileges');
+        toast.error('You do not have staff privileges. Use email ending with @staff.com');
       }
       
     } catch (error: any) {
+      console.error('Login error:', error);
       toast.error(error.message || 'Invalid email or password');
     } finally {
       setLoading(false);
@@ -44,6 +46,7 @@ export default function StaffLoginPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-serif font-bold text-green-900">Staff Portal</h1>
           <p className="text-amber-600 mt-2">Staff Login</p>
+          <p className="text-xs text-gray-500 mt-2">Use email ending with @staff.com or @admin.com</p>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -56,8 +59,8 @@ export default function StaffLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              placeholder="staff@staff.com"
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="staff@derash.com"
             />
           </div>
           
