@@ -1,3 +1,4 @@
+
 import { createClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -5,7 +6,7 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': 'http://localhost:3000',
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
@@ -20,13 +21,63 @@ export async function POST(req: NextRequest) {
     
     // Call AI service
     const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'https://derash-ai-project.onrender.com';
-    const aiResponse = await fetch(`${AI_SERVICE_URL}/ai/process`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message }),
-    });
     
-    const aiData = await aiResponse.json();
+    let aiData;
+    let useFallback = false;
+    
+    try {
+      const aiResponse = await fetch(`${AI_SERVICE_URL}/ai/process`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+      
+      // Handle rate limiting
+      if (aiResponse.status === 429) {
+        console.log('⚠️ Rate limited by AI service');
+        useFallback = true;
+      } else {
+        const responseText = await aiResponse.text();
+        try {
+          aiData = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Failed to parse AI response:', responseText);
+          useFallback = true;
+        }
+      }
+    } catch (fetchError) {
+      console.error('❌ AI service fetch error:', fetchError);
+      useFallback = true;
+    }
+    
+    // Use fallback if AI service failed
+    if (useFallback || !aiData) {
+      const msg = message.toLowerCase();
+      let response = "How can I help you today? You can ask about bookings, spa services, or dining options.";
+      let intent = 'fallback';
+      let entities = {};
+      
+      if (msg.includes('book') || msg.includes('spa') || msg.includes('dinner') || msg.includes('restaurant')) {
+        response = "I'd be happy to help you book that! Please let me know what time works best for you (6PM, 7PM, or 8PM).";
+        intent = 'booking';
+        entities = { service: msg.includes('spa') ? 'spa' : 'dinner' };
+      } else if (msg.includes('complaint') || msg.includes('issue') || msg.includes('broken') || msg.includes('not working')) {
+        response = "I'm sorry to hear that. I've notified our staff and they'll assist you shortly. Would you like a complimentary drink while you wait?";
+        intent = 'complaint';
+        entities = { category: 'general', priority: 'high' };
+      } else if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) {
+        response = "Hello! Welcome to Derash AI. How can I make your stay exceptional today?";
+        intent = 'greeting';
+      }
+      
+      aiData = {
+        response: response,
+        intent: intent,
+        entities: entities,
+        text: response
+      };
+    }
+    
     console.log('🤖 AI Response:', aiData);
     
     const supabase = await createClient();
@@ -78,7 +129,7 @@ export async function POST(req: NextRequest) {
       entities: aiData.entities || {},
       bookingDetails: aiData.bookingDetails
     });
-    response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+    response.headers.set('Access-Control-Allow-Origin', '*');
     return response;
     
   } catch (error) {
@@ -88,7 +139,7 @@ export async function POST(req: NextRequest) {
       intent: 'error',
       entities: {}
     }, { status: 500 });
-    response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+    response.headers.set('Access-Control-Allow-Origin', '*');
     return response;
   }
 }
