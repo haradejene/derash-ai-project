@@ -1,47 +1,19 @@
+// backend/app/api/bookings/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const status = searchParams.get('status');
-  const priority = searchParams.get('priority');
-  
-  let query = supabaseAdmin
-    .from('complaints')
-    .select('*, users(name, room_number)')
-    .order('created_at', { ascending: false });
-  
-  if (status) {
-    query = query.eq('status', status);
-  }
-  
-  if (priority) {
-    query = query.eq('priority', priority);
-  }
-  
-  const { data, error } = await query;
-  
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  
-  return NextResponse.json({ complaints: data });
-}
-
-export async function PATCH(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { complaintId, status, resolutionNotes } = await req.json();
-    
-    const updateData: any = { status };
-    if (resolutionNotes) {
-      updateData.resolution_notes = resolutionNotes;
-      updateData.resolved_at = new Date().toISOString();
-    }
+    const { id } = await params;  // Await the params promise
+    const { status } = await req.json();
     
     const { data, error } = await supabaseAdmin
-      .from('complaints')
-      .update(updateData)
-      .eq('id', complaintId)
+      .from('bookings')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id)
       .select()
       .single();
     
@@ -49,7 +21,30 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     
-    return NextResponse.json({ complaint: data });
+    return NextResponse.json({ booking: data });
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    
+    const { data, error } = await supabaseAdmin
+      .from('bookings')
+      .select('*, users(name, room_number)')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    
+    return NextResponse.json({ booking: data });
   } catch (error) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
