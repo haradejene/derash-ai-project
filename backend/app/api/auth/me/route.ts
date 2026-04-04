@@ -5,7 +5,7 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': 'http://localhost:3000',
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Allow-Credentials': 'true',
@@ -20,17 +20,17 @@ export async function GET(req: NextRequest) {
     
     if (!user) {
       const response = NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-      response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+      response.headers.set('Access-Control-Allow-Origin', '*');
       return response;
     }
     
     const response = NextResponse.json({ user });
-    response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+    response.headers.set('Access-Control-Allow-Origin', '*');
     return response;
     
   } catch (error) {
     const response = NextResponse.json({ error: 'Auth failed' }, { status: 500 });
-    response.headers.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+    response.headers.set('Access-Control-Allow-Origin', '*');
     return response;
   }
 }

@@ -45,8 +45,10 @@ export async function POST(req: NextRequest) {
           phone,
           role: role || 'guest',
         },
-        // This is important - auto confirm email
-        emailRedirectTo: 'http://localhost:3000/login'
+        // Fix: Use a valid URL or remove this line since we auto-confirm below
+        emailRedirectTo: process.env.NODE_ENV === 'production' 
+          ? 'https://derash-ai-project-2.onrender.com/login' 
+          : 'http://localhost:3000/login'
       }
     });
     
